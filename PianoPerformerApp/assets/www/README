@@ -1,0 +1,17 @@
+### PianoPerformerApp ###
+
+Android version of PianoPerformer.
+
+libs:
+ - Phonegap
+ - MIDI.js https://github.com/mudcube/MIDI.js
+ - jasmid (Matt Westcott & Ben Firshman)
+ - audiolet https://github.com/oampo/Audiolet/wiki
+ - https://github.com/abudaan/midibridge-js
+ - https://github.com/kshoji/USB-MIDI-Driver
+ - http://cubiq.org/iscroll-4
+ - easeljs
+ - jquery
+ 
+license:
+ - GPL v3

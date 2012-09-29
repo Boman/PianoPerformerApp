@@ -1,0 +1,169 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>HTML5 PianoPerformer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- loading libraries -->
+<script type="text/javascript" charset="utf-8"
+	src="libs/cordova-2.0.0.js"></script>
+
+<script type="text/javascript" src="libs/jquery-1.7.1.min.js"></script>
+
+<link rel="stylesheet" href="libs/jquery.mobile-1.1.1.min.css" />
+<script type="text/javascript" src="libs/jquery.mobile-1.1.1.min.js"></script>
+
+<script src="http://code.createjs.com/easeljs-0.4.2.min.js"></script>
+
+<script type="text/javascript" src="libs/jasmid/tools.js"></script>
+<script type="text/javascript" src="libs/jasmid/midifile.js"></script>
+<script type="text/javascript" src="libs/jasmid/stream.js"></script>
+
+<link rel="stylesheet" type="text/css"
+	href="libs/simpleDialog/jquery.mobile.simpledialog.min.css" />
+<script type="text/javascript"
+	src="libs/simpleDialog/jquery.mobile.simpledialog2.min.js"></script>
+
+<script type="application/javascript" src="libs/iscroll.js"></script>
+<script type="text/javascript">
+	var myScroll;
+	function initScroll() {
+		setTimeout(function() {
+			myScroll = new iScroll('wrapper');
+		}, 100);
+	}
+</script>
+
+<script type="text/javascript" src="controlBar.js"></script>
+<script type="text/javascript" src="keyPane.js"></script>
+<script type="text/javascript" src="main.js"></script>
+<script type="text/javascript" src="piano.js"></script>
+<script type="text/javascript" src="scrollPane.js"></script>
+<script type="text/javascript" src="song.js"></script>
+<script type="text/javascript" src="tools.js"></script>
+<script type="text/javascript">
+	//var songsURL = "http://www-user.tu-chemnitz.de/~falt/PianoPerformer/resources/";
+	var songsURL = "resources/";
+
+	//document.addEventListener("deviceready", firstInit, false);
+	$(firstInit);
+
+	function firstInit() {
+		document.addEventListener("backbutton", backPressed, false);
+		document.addEventListener("pause", pauseApp, false);
+		document.addEventListener("resume", resumeApp, false);
+
+		/* song = new Song();
+		song.load("resources/entchen.mid", function() {
+			playPiano();
+		}); */
+
+		loadSongs();
+		initScroll();
+
+		$(document)
+				.delegate(
+						'#openMoreDialog',
+						'click',
+						function() {
+							if (typeof $.mobile.sdCurrentDialog == 'undefined') {
+								$('<div>')
+										.simpledialog2(
+												{
+													mode : 'blank',
+													headerText : 'More Actions',
+													headerClose : false,
+													top : 0,
+													width : 220,
+													left : $(document).width() - 240,
+													blankContent : "<a href=\"javascript:alert('not yet supported');\" data-role='button' data-icon='plus'>Add Song</a>"
+															+ "<a href='javascript:$.mobile.sdCurrentDialog.close();playPiano();' data-role='button' data-icon='arrow-r'>Free Play</a>"
+															+ "<a rel='close' data-role='button' href='#'>Close</a>"
+												});
+							} else {
+								$.mobile.sdCurrentDialog.close();
+							}
+						});
+	}
+</script>
+
+</head>
+<body>
+	<div id="jqMobile">
+		<div id="mainMenu" data-role="page">
+			<div data-role="header" data-position="fixed">
+				<h1>PianoPerformer</h1>
+				<a href="" id="openMoreDialog" class="ui-btn-right"
+					data-role="button" data-icon="grid" data-iconpos="notext"
+					data-theme="c">More</a>
+			</div>
+			<div data-role="content">
+				<div id="wrapper"
+					style="position: absolute; top: 50px; bottom: 0; left: 0; width: 100%; overflow: auto;">
+					<div id="scroller" style="margin: 10px;">
+						<ul id="songList" data-role="listview" data-inset="true">
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="songSettings" data-role="page">
+			<div data-role="header" data-position="fixed">
+				<a href="javascript:backPressed();" data-icon="arrow-l">Back</a>
+				<h1>PianoPerformer</h1>
+				<a href="javascript:playPiano();" data-icon="arrow-r">Play</a>
+			</div>
+			<div data-role="content">
+				<table margin="0" style="width: 100%;">
+					<tbody>
+						<tr>
+							<th><h2 id="songSettingsSongTitle"></h2></th>
+							<td><h3 id="songSettingsSongComposer"></h3></td>
+							<td><h3 id="songSettingsSongDuration"></h3></td>
+						</tr>
+					</tbody>
+				</table>
+				<div data-role="fieldcontain" class="ui-field-contain ui-body ui-br">
+					<fieldset data-role="controlgroup">
+						<legend>The mode for note scroll:</legend>
+						<input type="radio" name="play-choice" id="play-choice-1"
+							value="choice-1" checked="checked" /> <label for="play-choice-1">auto
+							play</label> <input type="radio" name="play-choice" id="play-choice-2"
+							value="choice-2" /> <label for="play-choice-2">user play
+							(requires MIDI-Device)</label>
+					</fieldset>
+				</div>
+				<div data-role="fieldcontain" class="ui-field-contain ui-body ui-br">
+					<fieldset data-role="controlgroup">
+						<legend>Showed keys:</legend>
+						<input type="radio" name="keys-choice" id="keys-choice-1"
+							value="choice-1" checked="checked" /><label for="keys-choice-1">only
+							played keys</label> <input type="radio" name="keys-choice"
+							id="keys-choice-2" value="choice-2" /><label for="keys-choice-2">all
+							keys</label>
+					</fieldset>
+				</div>
+				<div data-role="fieldcontain" class="ui-field-contain ui-body ui-br">
+					<label for="slider-1"> Speed:</label> <input type="range"
+						name="slider-1" id="slider-1" value="100" min="10" max="200"
+						step="10" data-highlight="true" />
+				</div>
+				<div data-role="fieldcontain" class="ui-field-contain ui-body ui-br">
+					<label for="flip-1" class="ui-input-text">Sound:</label><select
+						name="flip-1" id="flip-1" data-role="slider">
+						<option value="off">Off</option>
+						<option value="on">On</option>
+					</select>
+				</div>
+			</div>
+			<div data-role="footer" class="ui-bar" data-position="fixed">
+				<a href="" data-role="button" data-icon="delete">Delete Song</a>
+			</div>
+		</div>
+	</div>
+
+	<canvas id="mainCanvas"
+		style="position: fixed; top: 0; left: 0; background-color: #444; display: none;"></canvas>
+
+</body>
+</html>
